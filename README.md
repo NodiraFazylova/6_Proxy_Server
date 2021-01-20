@@ -8,6 +8,14 @@ The files downloaded by users will be stored in the server memory.
 
 Server users can issue commands:
 
+|   **command**   |   **description**   |
+| --- | --- |
+| **connect to <ip:port>** |     |
+| **disconnect** |     |
+| **get list of cached files** |     |
+| **get file \<path>\** |     |
+| **reconnect to \<ip:port>\** |     |
+
 
 ### Server configuration (and how to run .exe file)
 
