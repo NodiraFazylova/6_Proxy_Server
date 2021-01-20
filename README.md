@@ -4,6 +4,10 @@ The files downloaded by users will be stored in the server memory.
 
 ## Getting started
 
+### Server commands
+
+Server users can issue commands:
+
 ### Server configuration (and how to run .exe file)
 
 | Command | Description |
