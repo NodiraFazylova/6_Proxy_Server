@@ -13,8 +13,8 @@ Server users can issue commands:
 | **connect to <ip:port>** |     |
 | **disconnect** |     |
 | **get list of cached files** |     |
-| **get file <path>** |     |
-| **reconnect to <ip:port>** |     |
+| **get file** **\<****path****\>** |     |
+| **reconnect to** **\<****ip:port****\>** |     |
 
 
 ### Server configuration (and how to run .exe file)
