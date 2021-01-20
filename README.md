@@ -8,9 +8,10 @@ The files downloaded by users will be stored in the server memory.
 
 Server users can issue commands:
 
+
 ### Server configuration (and how to run .exe file)
 
-| Command | Description |
+|   Command   |   Description   |
 | --- | --- |
 | \-d \-\-dir=\<path\> | Path to the directory where files will be stored \(future\) |
 | \-i \-\-ip=\<IP\> | IP address of server listener |
