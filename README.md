@@ -8,7 +8,7 @@ The files downloaded by users will be stored in the server memory.
 
 Server users can issue commands:
 
-|   **Command**   |   **Description**   |
+|   __Command__   |   __Description__   |
 | --- | --- |
 | connect to <ip:port> | Proxy creates 2 connections, 1 - with the client, 2 - with the required server at the sent address like "0.0.0.0:80" |
 | disconnect | Proxy terminates the connection with the client server and waits for other commands from it |
@@ -23,7 +23,7 @@ When you reset the only session that worked with a cache entry, it is allowed to
 
 ### Server configuration (and how to run .exe file)
 
-|   Command   |   Description   |
+|   __Command__   |   __Description__   |
 | --- | --- |
 | \-d \-\-dir=\<path\> | Path to the directory where files will be stored \(future\) |
 | \-i \-\-ip=\<IP\> | IP address of server listener |
