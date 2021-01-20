@@ -8,7 +8,7 @@ The files downloaded by users will be stored in the server memory.
 
 Server users can issue commands:
 
-|   **command**   |   **description**   |
+|   **Command**   |   **Description**   |
 | --- | --- |
 | *connect to <ip:port>* | Proxy creates 2 connections, 1 - with the client, 2 - with the required server at the sent address like "0.0.0.0:80" |
 | *disconnect* | Proxy terminates the connection with the client server and waits for other commands from it |
