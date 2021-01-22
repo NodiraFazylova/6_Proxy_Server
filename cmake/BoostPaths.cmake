@@ -1,0 +1,2 @@
+set(BOOST_INCLUDE "")
+set(BOOST_LIBRARY "")
