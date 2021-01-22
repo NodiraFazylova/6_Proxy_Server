@@ -42,3 +42,6 @@
 
 #CMake
 *.user
+
+#json config
+*.json
