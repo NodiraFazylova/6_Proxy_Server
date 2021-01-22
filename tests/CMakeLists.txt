@@ -8,3 +8,9 @@ file(GLOB_RECURSE sources
 )
 
 add_executable(${PROJECT_NAME} ${sources})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+	${tests_SOURCE_DIR}
+	${tests_SOURCE_DIR}/../src
+	${tests_SOURCE_DIR}/../3rdparty
+)
