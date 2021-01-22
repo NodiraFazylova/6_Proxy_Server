@@ -5,4 +5,7 @@
 ######################################################################
 
 # install the cmake modules
-file(GLOB 6_PROXY_SERVER "${CMAKE_CURRENT_SOURCE_DIR}/"*.cmake)
+file(GLOB PROXY_SERVER_6_CMAKE_FILES 
+	"${CMAKE_CURRENT_SOURCE_DIR}/"*.cmake
+	"${CMAKE_CURRENT_SOURCE_DIR}/tests/"*.cmake
+)
