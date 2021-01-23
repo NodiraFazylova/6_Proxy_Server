@@ -4,6 +4,7 @@ project(yaps)
 
 #source files
 file(GLOB_RECURSE sources
+	server.cpp
 	main.cpp
 )
 
@@ -13,11 +14,3 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${yaps_SOURCE_DIR}
 	${yaps_SOURCE_DIR}/../3rdparty
 )
-
-# Path to additional CMake module
-set(CMAKE_MODULE_PATH ${Proxy_Server_6_SOURCE_DIR}/cmake/tests ${CMAKE_MODULE_PATH})
-
-#include module for auto parsing tests
-include(ParseAndAddCatchTests)
-
-ParseAndAddCatchTests(${PROJECT_NAME})
