@@ -21,10 +21,7 @@ public:
     };
 };
 
-inline
-const server::config_t default_config;
-
-bool operator== ( const server::config_t & lh, const server::config_t & rh );
+bool is_valid_config( proxy_server_6::server::config_t & config );
 
 }   // namespace proxy_server_6
 
