@@ -74,6 +74,11 @@ void CommandLine::parse( int argc, char * argv[] ) const
     mDescription = mDescription.substr( mDescription.find_last_of( "/" ) + 1 );
 #endif
 
+    if( argc < 2 )
+    {
+        set_help_opt_if();
+    }
+
     // Skip the first argument (name of the program).
     int i = 1;
     while( i < argc )
@@ -125,11 +130,10 @@ void CommandLine::parse( int argc, char * argv[] ) const
                 // In all other cases there must be a value.
                 else if( value.empty() )
                 {
-                    LOG_ERROR("Failed to parse command line arguments: "
-                        "Missing value for argument \"%s\"!\n", flag.c_str());
-
-                    LOG_OS_ERROR(std::cerr, "Failed to parse command line arguments: "
+                   LOG_ERROR(std::cerr, "Failed to parse command line arguments: "
                                "Missing value for argument \"" + flag + "\"!" );
+
+                   set_help_opt_if();
                 }
                 // For a std::string, we take the entire value.
                 else if( std::holds_alternative<std::string *>( argument.mValue ) )
@@ -155,8 +159,9 @@ void CommandLine::parse( int argc, char * argv[] ) const
         // Print a warning if there was an unknown argument.
         if( !foundArgument )
         {
-            std::cerr << "Ignoring unknown command line argument \"" << flag
-                << "\"." << std::endl;
+            LOG_ERROR(std::cerr, "Ignoring unknown command line argument \"" + flag + "\"." );
+
+            set_help_opt_if();
         }
 
         // Advance to the next flag.
@@ -166,6 +171,22 @@ void CommandLine::parse( int argc, char * argv[] ) const
         if( foundArgument && valueIsSeparate )
         {
             ++i;
+        }
+    }
+}
+
+
+void CommandLine::set_help_opt_if() const
+{
+    auto pos = std::begin( mArguments );
+    for( pos; pos != std::end( mArguments ); pos = std::next( pos ) )
+    {
+        if( std::find( std::begin( pos->mFlags ), std::end( pos->mFlags ), "-h" ) != std::end( pos->mFlags ) ||
+            std::find( std::begin( pos->mFlags ), std::end( pos->mFlags ), "-?" ) != std::end( pos->mFlags ) ||
+            std::find( std::begin( pos->mFlags ), std::end( pos->mFlags ), "--help" ) != std::end( pos->mFlags ) )
+        {
+            *std::get<bool *>( pos->mValue ) = true;
+            break;
         }
     }
 }

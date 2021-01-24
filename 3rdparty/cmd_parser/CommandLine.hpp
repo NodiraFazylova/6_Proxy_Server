@@ -61,12 +61,20 @@ public:
     void parse( int argc, char * argv[] ) const;
 
 private:
+
     struct Argument
     {
         std::vector<std::string> mFlags;
         Value                    mValue;
         std::string              mHelp;
     };
+
+private:
+
+    // set help_opt = true, if it exists
+    void set_help_opt_if() const;
+
+private:
 
     mutable std::string   mDescription;
     std::vector<Argument> mArguments;
