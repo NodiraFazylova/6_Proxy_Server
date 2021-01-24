@@ -14,3 +14,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${yaps_SOURCE_DIR}
 	${yaps_SOURCE_DIR}/../3rdparty
 )
+
+# uncomment this to enable logger
+target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_ENABLE)

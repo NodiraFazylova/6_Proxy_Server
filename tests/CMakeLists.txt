@@ -17,6 +17,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${tests_SOURCE_DIR}/../3rdparty
 )
 
+# uncomment this to enable logger
+target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_ENABLE)
+
 # Path to additional CMake module
 set(CMAKE_MODULE_PATH ${Proxy_Server_6_SOURCE_DIR}/cmake/tests ${CMAKE_MODULE_PATH})
 
