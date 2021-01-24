@@ -20,6 +20,9 @@ int main( int argc, char ** argv )
 
 TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 {
+    using namespace tests;
+
+    proxy_server_6::server::config_t default_config;
     proxy_server_6::server::config_t config;
     bool help_opt = false;
 
@@ -34,7 +37,7 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
         
         REQUIRE( help_opt == true );
 
-        bool is_equal = config == proxy_server_6::default_config;
+        bool is_equal = config == default_config;
         REQUIRE( is_equal == true );
     }
 
@@ -47,7 +50,7 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 
         REQUIRE( help_opt == true );
 
-        bool is_equal = config == proxy_server_6::default_config;
+        bool is_equal = config == default_config;
         REQUIRE( is_equal == true );
     }
 
@@ -60,7 +63,7 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 
         REQUIRE( help_opt == true );
 
-        bool is_equal = config == proxy_server_6::default_config;
+        bool is_equal = config == default_config;
         REQUIRE_FALSE( is_equal );
     }
 
@@ -73,7 +76,7 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 
         REQUIRE_FALSE( help_opt );
 
-        bool is_equal = config == proxy_server_6::default_config;
+        bool is_equal = config == default_config;
         REQUIRE_FALSE( is_equal );
     }
 }
