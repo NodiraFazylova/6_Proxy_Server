@@ -15,7 +15,28 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${tests_SOURCE_DIR}
 	${tests_SOURCE_DIR}/../src
 	${tests_SOURCE_DIR}/../3rdparty
+	${BOOST_INCLUDE}
 )
+
+if(UNIX)
+	target_link_libraries(<CONFIG>_OUTPUT_NAME{PROJECT_NAME}
+		pthread
+	)
+else()
+	target_link_libraries(${PROJECT_NAME}
+		# debug
+		${BOOST_LIBRARY}/libboost_date_time-clangw10-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_regex-clangw10-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_chrono-clangw10-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_thread-clangw10-mt-gd-x64-1_74.lib
+		
+		# release
+		${BOOST_LIBRARY}/libboost_date_time-clangw10-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_regex-clangw10-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_chrono-clangw10-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_thread-clangw10-mt-x64-1_74.lib
+	)
+endif()
 
 # uncomment this to enable logger
 target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_ENABLE)
