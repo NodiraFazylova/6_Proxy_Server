@@ -10,10 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(UNIX)
 set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++")
 set(CMAKE_C_COMPILER "clang")
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++")
 
 # Path to additional CMake module
 set(CMAKE_MODULE_PATH ${Proxy_Server_6_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
