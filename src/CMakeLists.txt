@@ -4,8 +4,9 @@ project(yaps)
 
 #source files
 file(GLOB_RECURSE sources
-	server.cpp
-	main.cpp
+  server.cpp
+  cmd_parser.cpp
+  main.cpp
 )
 
 add_executable(${PROJECT_NAME} ${sources})
