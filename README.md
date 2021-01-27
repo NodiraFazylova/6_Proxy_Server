@@ -32,3 +32,16 @@ When you reset the only session that worked with a cache entry, it is allowed to
 | \-w \-\-workers=\<uint\> | Maximum number of available cache tables |
 | \-v \-\-verbose | Flag that indicates that debug messages is printed to stdout \(stderr\), if not set server prints only errors |
 | \-h \-\-help | Print help string |
+
+
+## Acknowledgements
+
+Boost library open source community.
+
+## License
+
+This project is licensed under the MIT License
+
+## Author
+
+Nodira Fazylova
