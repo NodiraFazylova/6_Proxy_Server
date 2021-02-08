@@ -3,6 +3,7 @@
 
 #include "logger.h"
 #include "cmd_parser.hpp"
+#include "protocol/protocol.hpp"
 #include "server.hpp"
 
 #define CATCH_CONFIG_RUNNER
@@ -78,6 +79,113 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 
         bool is_equal = config == default_config;
         REQUIRE_FALSE( is_equal );
+    }
+}
+
+
+TEST_CASE( "protocol unit test", "[protocol]" )
+{
+    SECTION( "invalid protocols" )
+    {
+        SECTION( "empty protocol" )
+        {
+            std::string empty_protocol;
+
+            auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+            auto command         = protocol::parse( empty_protocol );
+            
+            //REQUIRE( command == invalid_command );  // todo not work
+            REQUIRE( command.index() == invalid_command.index() );
+        }
+
+        SECTION( "unknown command" )
+        {
+            std::string unknown_protocol{"qwerty 1234:123 32"};
+
+            auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+            auto command = protocol::parse( unknown_protocol );
+
+            //REQUIRE( command == invalid_command );  // todo not work
+            REQUIRE( command.index() == invalid_command.index() );
+        }
+
+        SECTION( "command without params" )
+        {
+            // connect to
+            {
+                protocol::connect_request protocol; // protocol with empty params
+LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+                auto command = protocol::parse(protocol::make( protocol));
+
+                //REQUIRE( command == invalid_command );  // todo not work
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+
+            // reconnetc to
+            {
+                protocol::reconnect_notify protocol; // protocol with empty params
+LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+                auto command = protocol::parse( protocol::make( protocol ) );
+
+                //REQUIRE( command == invalid_command );  // todo not work
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+
+            // get file
+            {
+                protocol::get_file_request protocol; // protocol with empty params
+ LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+                auto command = protocol::parse( protocol::make( protocol ) );
+
+                //REQUIRE( command == invalid_command );  // todo not work
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+        }
+
+        SECTION( "command with invalid params" )
+        {
+            // connect request
+            {
+                std::string protocol{ "aaaa" /* fail in socket level, now - ok*/  "aaaaqwweqw" /* stoi in parse thow exception */ };
+                
+                protocol::command_variant command;
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+
+                REQUIRE_NOTHROW( [&] () { command = protocol::parse( protocol );  } ); // parse should not throw exceptions
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+
+            // reconnect request
+            {
+                protocol::reconnect_notify protocol;
+                protocol.host = "127.0.0.1";
+
+                protocol::command_variant command;
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+
+                REQUIRE_NOTHROW( [&] () { command = protocol::parse( protocol::make( protocol ) );  } ); // parse should not throw exceptions
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+        }
+    }
+
+    SECTION( "valid protocols" )
+    {
+        // connect to
+        {
+            protocol::connect_request protocol;
+            protocol.host = "127.0.0.1";
+            protocol.port = 123;
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+            const auto & receive_protocol = std::get<protocol::connect_request>( command );
+            
+            REQUIRE( protocol.host == receive_protocol.host );
+            REQUIRE( protocol.port == receive_protocol.port );
+        }
     }
 }
 
