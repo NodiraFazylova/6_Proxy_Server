@@ -7,6 +7,8 @@ file(GLOB_RECURSE sources
 	server.cpp
 	cmd_parser.cpp
 	main.cpp
+	protocol/detail/make.cpp
+	protocol/detail/parse.cpp
 )
 
 add_executable(${PROJECT_NAME} ${sources})
