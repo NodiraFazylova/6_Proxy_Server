@@ -12,7 +12,11 @@ std::string make( const protocol::connect_request & packet )
 {
     std::stringstream ss;
 
-    ss << "connect to " << packet.host << ":" << packet.host;
+    ss << "connect to " << packet.host << ":";
+    if( packet.port != 0 ) // need for empty default port
+    {
+        ss << packet.port;
+    }
 
     return ss.str();
 }
@@ -86,8 +90,11 @@ std::string make( const protocol::reconnect_notify & packet )
 {
     std::stringstream ss;
 
-    ss << "reconnect to " << packet.host << ":" << packet.port;
-
+    ss << "reconnect to " << packet.host << ":"; 
+    if( packet.port != 0 ) // need for empty default port
+    {
+        ss << packet.port;
+    }
     return ss.str();
 }
 
