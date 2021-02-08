@@ -80,3 +80,18 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
         REQUIRE_FALSE( is_equal );
     }
 }
+
+TEST_CASE( "create server", "[server]" )
+{
+    proxy_server_6::server::config_t config;
+    config.dir_path = "./"; // cur directory
+    config.dir_path = "localhost";
+    config.port = "124";
+    // config.maxdate_size;  //default
+    // config.workers_count; // default
+    config.verbose = true; // enable logs
+
+    proxy_server_6::server server( config );
+
+
+}
