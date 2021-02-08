@@ -10,14 +10,14 @@ namespace protocol
 
 struct connect_request
 {
-    std::string    host;    // remote server host
-    unsigned short port;    // remote server port 
+    std::string    host;                    // remote server host
+    unsigned short port = 0;                // remote server port 
 };
 
 
 struct connect_response
 {
-    unsigned short port;    // new port for client
+    unsigned short port;                    // new port for client
 };
 
 
@@ -40,20 +40,20 @@ struct get_cached_files_response
 
 struct get_file_request
 {
-    std::string file_path;  // paths file
+    std::string file_path;                  // paths file
 };
 
 
 struct get_file_response
 {
-    std::string file_path;  // path to requested file
+    std::string file_path;                  // path to requested file
 };
 
 
 struct reconnect_notify
 {
-    std::string    host;    // remote server host
-    unsigned short port;    // remote server port
+    std::string    host;                    // remote server host
+    unsigned short port = 0;                // remote server port
 };
 
 
