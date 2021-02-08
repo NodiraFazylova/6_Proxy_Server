@@ -99,6 +99,8 @@ protocol::command_variant parse( const std::string & s )
             }
         }
     }
+
+    return {}; // std::monostate as value
 }
 
 }   // namespace protocol
