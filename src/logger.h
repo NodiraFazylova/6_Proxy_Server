@@ -18,7 +18,7 @@
     #define LOG_IF_C(cond, file,  args...)   if((cond)) \ 
                                                  LOG_DEBUG( file, args... )
   
-  #elif _WIN32 /* если мы на винде */
+  #elif _WIN32 /* если мы на винде (power-shell) */
     #define RED "\x1b[31m" /* красный */
     #define NC "\x1b[0m" /* сбрасываем на дефолтный */
   
