@@ -6,6 +6,8 @@ option(PROXY_SERVER_6_TESTS "Include unit tests" OFF)
 file(GLOB_RECURSE sources
 	${tests_SOURCE_DIR}/../src/cmd_parser.cpp
 	${tests_SOURCE_DIR}/../src/server.cpp
+	${tests_SOURCE_DIR}/../src/protocol/detail/make.cpp
+	${tests_SOURCE_DIR}/../src/protocol/detail/parse.cpp
 	main.cpp
 )
 
@@ -19,7 +21,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 if(UNIX)
-	target_link_libraries(<CONFIG>_OUTPUT_NAME{PROJECT_NAME}
+	target_link_libraries(${PROJECT_NAME} PUBLIC
+		${BOOST_LIBRARY}/libboost_chrono.so
+		${BOOST_LIBRARY}/libboost_system.so
+		${BOOST_LIBRARY}/libboost_thread.so
+
 		pthread
 	)
 else()

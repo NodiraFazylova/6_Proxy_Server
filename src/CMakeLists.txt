@@ -20,7 +20,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 if(UNIX)
-	target_link_libraries(<CONFIG>_OUTPUT_NAME{PROJECT_NAME}
+	target_link_libraries(${PROJECT_NAME} PUBLIC
+		${BOOST_LIBRARY}/libboost_chrono.so
+		${BOOST_LIBRARY}/libboost_system.so
+		${BOOST_LIBRARY}/libboost_thread.so
+
 		pthread
 	)
 else()
