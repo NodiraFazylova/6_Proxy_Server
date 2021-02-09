@@ -11,7 +11,7 @@ namespace protocol
 protocol::command_variant parse( const std::string & s )
 {
     try
-    { 
+    {
         auto command_end_pos = s.find_last_of( ' ' );
         std::string command = s.substr( 0, command_end_pos );
         if( command == "connect to" )
@@ -24,10 +24,24 @@ protocol::command_variant parse( const std::string & s )
                 v.host = s.substr( command_end_pos + 1, host_end_pos - command_end_pos - 1 );
                 if( host_end_pos != s.npos )
                 {
-                    v.port = static_cast<unsigned short>(std::stoi( s.substr( host_end_pos + 1 ) ));
+                    v.port = static_cast<unsigned short>( std::stoi( s.substr( host_end_pos + 1 ) ) );
                 }
 
                 if( v.port != 0 ) // we can-t use port == 0;
+                {
+                    return v;
+                }
+            }
+        }
+        else if( command == "connect  port" )
+        {
+            if( command_end_pos != s.npos )
+            {
+                protocol::connect_response v;
+
+                v.port = static_cast<unsigned short>( std::stoi( s.substr( command_end_pos + 1 ) ) );
+
+                if( v.port != 0 ) // we can-t use port == 0
                 {
                     return v;
                 }
@@ -47,12 +61,11 @@ protocol::command_variant parse( const std::string & s )
         }
         else if( command == "list of cached files" )
         {
+            protocol::get_cached_files_response v;
+
             if( command_end_pos != s.npos )
             {
-                protocol::get_cached_files_response v;
-
-                std::string_view file_paths = s.substr( command_end_pos + 1 );
-
+                std::string file_paths = s.substr( command_end_pos + 1 );
                 for( auto end_pos = file_paths.find_first_of( '\n' );
                      end_pos != file_paths.npos;
                      end_pos = file_paths.find_first_of( '\n' ) )
@@ -65,9 +78,9 @@ protocol::command_variant parse( const std::string & s )
                 {
                     v.file_paths.emplace_back( file_paths );
                 }
-
-                return v;
             }
+
+            return v;
         }
         else if( command == "get file" )
         {
@@ -83,7 +96,7 @@ protocol::command_variant parse( const std::string & s )
                 }
             }
         }
-        else if( command == " file" )
+        else if( command == "file" )
         {
             protocol::get_file_response v;
             if( command_end_pos != s.npos )
