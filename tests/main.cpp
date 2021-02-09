@@ -77,7 +77,7 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 
         REQUIRE_FALSE( help_opt );
 
-        bool is_equal = config == default_config;
+        bool is_equal = ( config == default_config );
         REQUIRE_FALSE( is_equal );
     }
 }
@@ -103,7 +103,7 @@ TEST_CASE( "protocol unit test", "[protocol]" )
             std::string unknown_protocol{"qwerty 1234:123 32"};
 
             auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
-            auto command = protocol::parse( unknown_protocol );
+            auto command         = protocol::parse( unknown_protocol );
 
             //REQUIRE( command == invalid_command );  // todo not work
             REQUIRE( command.index() == invalid_command.index() );
@@ -114,9 +114,20 @@ TEST_CASE( "protocol unit test", "[protocol]" )
             // connect to
             {
                 protocol::connect_request protocol; // protocol with empty params
-LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+
                 auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
-                auto command = protocol::parse(protocol::make( protocol));
+                auto command         = protocol::parse( protocol::make( protocol ) );
+
+                //REQUIRE( command == invalid_command );  // todo not work
+                REQUIRE( command.index() == invalid_command.index() );
+            }
+
+            // connect port
+            {
+                protocol::connect_response protocol; // protocol with empty params
+
+                auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
+                auto command         = protocol::parse( protocol::make( protocol ) );
 
                 //REQUIRE( command == invalid_command );  // todo not work
                 REQUIRE( command.index() == invalid_command.index() );
@@ -125,9 +136,9 @@ LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
             // reconnetc to
             {
                 protocol::reconnect_notify protocol; // protocol with empty params
-LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+
                 auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
-                auto command = protocol::parse( protocol::make( protocol ) );
+                auto command         = protocol::parse( protocol::make( protocol ) );
 
                 //REQUIRE( command == invalid_command );  // todo not work
                 REQUIRE( command.index() == invalid_command.index() );
@@ -136,9 +147,9 @@ LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
             // get file
             {
                 protocol::get_file_request protocol; // protocol with empty params
- LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
+
                 auto invalid_command = protocol::command_variant{}; // variant with std::monostate as value
-                auto command = protocol::parse( protocol::make( protocol ) );
+                auto command         = protocol::parse( protocol::make( protocol ) );
 
                 //REQUIRE( command == invalid_command );  // todo not work
                 REQUIRE( command.index() == invalid_command.index() );
@@ -180,11 +191,100 @@ LOG_DEBUG( std::cout, "\"" << protocol::make( protocol ) << "\"" );
             protocol.host = "127.0.0.1";
             protocol.port = 123;
 
-            auto command = protocol::parse( protocol::make( protocol ) );
+            auto command  = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::connect_request>( command ) );
+
             const auto & receive_protocol = std::get<protocol::connect_request>( command );
             
             REQUIRE( protocol.host == receive_protocol.host );
             REQUIRE( protocol.port == receive_protocol.port );
+        }
+
+        // connect port
+        {
+            protocol::connect_response protocol;
+            protocol.port = 1234;
+
+            auto command  = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::connect_response>( command ) );
+
+            const auto & receive_protocol = std::get<protocol::connect_response>( command );
+
+            REQUIRE( protocol.port == receive_protocol.port );
+        }
+
+        // disconnect
+        {
+            protocol::disconnect_notify protocol;
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::disconnect_notify>( command ) );
+        }
+
+        // get list of cached files
+        {
+            protocol::get_cached_files_request protocol;
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::get_cached_files_request>( command ) );
+        }
+
+        // list of cached files (empty)
+        {
+            protocol::get_cached_files_response protocol;
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::get_cached_files_response>( command ) );
+        }
+
+        // list of cached files
+        {
+            protocol::get_cached_files_response protocol;
+            for( auto i = 0; i < 10; ++i )
+            {
+                protocol.file_paths.emplace_back( std::to_string( i ) );
+            }
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::get_cached_files_response>( command ) );
+
+            const auto & receive_protocol = std::get<protocol::get_cached_files_response>( command );
+
+            REQUIRE( protocol.file_paths == receive_protocol.file_paths );
+        }
+
+        // get file
+        {
+            protocol::get_file_request protocol;
+            protocol.file_path = "file";
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::get_file_request>( command ) );
+
+            const auto & received_protocol = std::get<protocol::get_file_request>( command );
+
+            REQUIRE( protocol.file_path == received_protocol.file_path );
+        }
+
+        // file
+        {
+            protocol::get_file_response protocol;
+            protocol.file_path = "file";
+
+            auto command = protocol::parse( protocol::make( protocol ) );
+
+            REQUIRE_NOTHROW( std::get<protocol::get_file_response>( command ) );
+
+            const auto & received_protocol = std::get<protocol::get_file_response>( command );
+
+            REQUIRE( protocol.file_path == received_protocol.file_path );
         }
     }
 }
@@ -194,10 +294,10 @@ TEST_CASE( "create server", "[server]" )
     proxy_server_6::server::config_t config;
     config.dir_path = "./"; // cur directory
     config.dir_path = "localhost";
-    config.port = "124";
+    config.port     = "124";
     // config.maxdate_size;  //default
     // config.workers_count; // default
-    config.verbose = true; // enable logs
+    //config.verbose = true; // enable logs
 
     proxy_server_6::server server( config );
 
