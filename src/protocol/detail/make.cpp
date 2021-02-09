@@ -26,7 +26,11 @@ std::string make( const protocol::connect_response & packet )
 {
     std::stringstream ss;
 
-    ss << packet.port;
+    ss << "connect  port ";
+    if( packet.port != 0 ) // need for empty default port
+    {
+        ss << packet.port;
+    }
 
     return ss.str();
 }
@@ -46,7 +50,7 @@ std::string make( const protocol::get_cached_files_request & packet )
 {
     std::stringstream ss;
 
-    ss << "get list of cached files";
+    ss << "get list of cached files ";
 
     return ss.str();
 }
@@ -56,7 +60,7 @@ std::string make( const protocol::get_cached_files_response & packet )
 {
     std::stringstream ss;
 
-    ss << "list of cached files: ";
+    ss << "list of cached files ";
     for( const auto & file_path : packet.file_paths )
     {
         ss << file_path << "\n";
