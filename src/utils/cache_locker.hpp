@@ -7,11 +7,11 @@
 
 namespace proxy_server_6
 {
->
+
 class cache_locker
 {
 public:
-    cache_locker( Mutex mtx )
+    cache_locker( std::mutex & mtx )
         : m_mtx( mtx )
     {
         m_locked = m_mtx.try_lock();
@@ -19,7 +19,7 @@ public:
 
     ~cache_locker()
     {
-        if( m_loced )
+        if( m_locked )
         {
             m_mtx.unlock();
         }
