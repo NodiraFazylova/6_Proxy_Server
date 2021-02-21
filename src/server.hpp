@@ -9,6 +9,8 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/thread.hpp>
 
+#include "cache.hpp"
+
 namespace proxy_server_6
 {
 
@@ -47,10 +49,11 @@ private:
     boost::asio::io_context             m_io_context;
     std::optional<asio_work_guard_t>    m_io_context_work;
 
+    proxy_server_6::cache               m_cache;
+
     std::string                         m_host;
     std::string                         m_port;
     std::string                         m_dir_path;
-    int64_t                             m_maxdata_size;
     int64_t                             m_workers_count;
     bool                                m_verbose;
 };

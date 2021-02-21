@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <utility>
 
+#include "cache.hpp"
 #include "logger.h"
 #include "server.hpp"
 #include "utils/is_valid_config.hpp"
@@ -14,10 +15,10 @@ server::server( server::config_t config )
     : m_threads()
     , m_io_context()
     , m_io_context_work()
+    , m_cache(m_io_context, /** default bucken cnt */5, config.maxdata_size, config.verbose)
     , m_host( std::move( config.host ) )
     , m_port( std::move( config.port ) )
     , m_dir_path( std::move( config.dir_path ) )
-    , m_maxdata_size( config.maxdata_size )
     , m_workers_count( config.workers_count )
     , m_verbose( config.verbose )
 {
@@ -27,7 +28,7 @@ server::server( server::config_t config )
             << std::left << std::setw( 10 ) << "ip: "       << m_host                      << ",\n"
             << std::left << std::setw( 10 ) << "port: "     << m_port                      << ",\n"
             << std::left << std::setw( 10 ) << "dir_path: " << m_dir_path                  << ",\n"
-            << std::left << std::setw( 10 ) << "maxdata: "  << m_maxdata_size              << ",\n"
+            << std::left << std::setw( 10 ) << "maxdata: "  << config.maxdata_size         << ",\n"
             << std::left << std::setw( 10 ) << "workers: "  << m_workers_count             << ",\n"
             << std::left << std::setw( 10 ) << "verbose: "  << std::boolalpha << m_verbose
     );
