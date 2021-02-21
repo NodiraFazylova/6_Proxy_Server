@@ -17,7 +17,7 @@ struct connect_request
 
 struct connect_response
 {
-    unsigned short port;                    // new port for client
+    unsigned short port = 0;                    // new port for client
 };
 
 
