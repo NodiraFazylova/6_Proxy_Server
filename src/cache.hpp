@@ -8,6 +8,7 @@
 #include <iostream>
 #include <mutex>
 #include <map>
+#include <set>
 #include <queue>
 #include <utility>
 
@@ -20,6 +21,73 @@
 namespace proxy_server_6
 {
 
+namespace detail
+{
+class command_queue
+{
+public:
+    struct timed_command
+    {
+        std::chrono::system_clock::time_point time;
+        size_t                                command_hash;
+    };
+
+    command_queue() = default;
+
+    auto find_by_command(const size_t command_hash)
+    {
+        auto pos = std::begin(m_queue);
+        for( auto end_pos = std::end(m_queue); pos != end_pos; pos = std::next(pos) )
+        {
+            if(pos->command_hash == command_hash)
+            {
+                break;
+            }
+        }
+
+        return pos;
+    }
+
+    void insert(timed_command command)
+    {
+        m_queue.emplace(std::move(command));
+    }
+
+    std::mutex & get_mutex()
+    {
+        return m_mtx;
+    }
+
+    bool empty()
+    {
+        return m_queue.empty();
+    }
+
+    size_t get_front_command()
+    {
+        return m_queue.begin()->command_hash;
+    }
+
+    void delete_front_command()
+    {
+        m_queue.erase(m_queue.begin());
+    }
+
+private:
+
+    std::mutex              m_mtx;
+    std::set<timed_command> m_queue;
+};
+
+inline
+bool operator< (const command_queue::timed_command & lh, const command_queue::timed_command & rh)
+{
+    return  (lh.time < rh.time) ||
+            ((lh.time == rh.time) && (lh.command_hash < rh.command_hash));
+}
+
+} // namespace detail
+
 class cache
 {
 
@@ -29,6 +97,7 @@ public:
         , m_cur_size( 0 )
         , m_max_size( max_data_size )
         , m_data( bucket_count )
+        , m_command_by_time()
         , m_verbose( verbose )
     {
         LOG_IF( m_verbose,
@@ -86,10 +155,11 @@ public:
 
         if( m_cur_size.load( std::memory_order_acquire ) + file.size() > m_max_size )
         {
-            proxy_server_6::cache_locker locker{ m_data[index].m_mtx };
-            if( locker )
+            proxy_server_6::cache_locker data_locker{ m_data[index].m_mtx };
+            proxy_server_6::cache_locker queue_locker{ m_command_by_time.get_mutex() };
+            if( data_locker && queue_locker )
             {
-                m_data[index].m_command_by_time.push( { std::chrono::system_clock::now(), command_hash } );
+                m_command_by_time.insert( { std::chrono::system_clock::now(), command_hash } ); 
                 m_data[index].m_files_by_command.insert( { command_hash, file } );
                 m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
             }
@@ -124,46 +194,34 @@ private:
 
     void delete_oldest_and_insert( const std::string & command, const std::string & file )
     {
-        //  here we need a guaranteed block, so we use std::lock_guar
-        std::vector<std::lock_guard<std::mutex>> lockers;
-        size_t min_index = 0;
         std::chrono::system_clock::time_point min_time = std::chrono::system_clock::now();
-        for( size_t index = 0; index < m_data.size(); ++index )
+        proxy_server_6::cache_locker queue_locker_{ m_command_by_time.get_mutex() };
+        size_t oldest_command;
+        if(queue_locker_ && m_command_by_time.empty())
         {
-            if( !m_data[index].m_command_by_time.empty() )
-            {
-                auto t_command = m_data[index].m_command_by_time.front();
-                min_time       = std::min( min_time, t_command.time );
-                min_index      = index;
-            }
-        }
+            oldest_command = m_command_by_time.get_front_command();
+            m_command_by_time.delete_front_command();
 
-        auto t_command = m_data[min_index].m_command_by_time.front();
-        m_data[min_index].m_command_by_time.pop();
+            proxy_server_6::cache_locker data_locker{m_data[oldest_command].m_mtx};
+            auto & bucket = m_data[oldest_command];
+            bucket.m_files_by_command.erase(oldest_command);
 
-        m_data[min_index].m_files_by_command.erase( t_command.command_hash );
-
-        // insert new value
-        size_t command_hash = std::hash<std::string>{}(command);
-        size_t index = command_hash % m_data.size();
-
-        m_data[index].m_command_by_time.push( { std::chrono::system_clock::now(), command_hash } );
-        m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
+            // insert new value
+            size_t command_hash = std::hash<std::string>{}(command);
+            size_t index = command_hash % m_data.size();
+            m_command_by_time.insert( { std::chrono::system_clock::now(), command_hash } );
+            bucket.m_files_by_command.insert( { command_hash, file } );
+            m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
+        }        
     }
 
 
 private:
-
-    struct timed_command
-    {
-        std::chrono::system_clock::time_point time;
-        size_t                                command_hash;
-    };
+    
 
     struct bucket
     {
         std::mutex                      m_mtx;
-        std::queue<timed_command>       m_command_by_time;
         std::map<size_t, std::string>   m_files_by_command;
     };
 
@@ -173,6 +231,7 @@ private:
     std::atomic_size_t        m_cur_size;
     size_t                    m_max_size;
     std::vector<bucket>       m_data;
+    detail::command_queue     m_command_by_time;
 
     bool                      m_verbose;
 };
