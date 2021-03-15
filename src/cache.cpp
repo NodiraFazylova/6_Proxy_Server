@@ -71,6 +71,16 @@ public:
 
     void insert_file( const std::string & command, const std::string & file )
     {
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::insert_file() - BEGIN"
+        );
+
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::insert_file(" << file << ")"
+        );
+
         size_t command_hash = std::hash<std::string>{}(command);
         size_t index = command_hash % m_data.size();
 
@@ -87,11 +97,21 @@ public:
         {
             m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, command, file ) );
         }
+
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::insert_file() - END"
+        );
     }
 
 
     void delete_oldest_file( const std::string & command, const std::string & file )
     {
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::delete_oldest_file() - BEGIN"
+        );
+
         std::chrono::system_clock::time_point min_time = std::chrono::system_clock::now();
         std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
         
@@ -111,18 +131,31 @@ public:
         m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) - old_file.size() );
         bucket.erase( oldest_command );
 
-       
-
         m_io_context.post( std::bind( &cache_impl::insert_file, this, command, file ) );
+
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::delete_oldest_file() - END"
+        );
     }
 
 
     std::string get_file( const std::string & command )
     {
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::get_file() - BEGIN"
+        );
+
         size_t command_hash = std::hash<std::string>{}(command);
         size_t index = command_hash % m_data.size();
 
         std::lock_guard locker{ m_data[index].get_mutex() };
+
+        LOG_IF( m_verbose,
+                std::cout,
+                "cache::get_file() - END"
+        );
         
         return m_data[index].get_file(command_hash);
     }
