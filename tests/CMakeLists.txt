@@ -4,6 +4,7 @@ project(tests)
 option(PROXY_SERVER_6_TESTS "Include unit tests" OFF)
 
 file(GLOB_RECURSE sources
+	${tests_SOURCE_DIR}/../src/cache.cpp
 	${tests_SOURCE_DIR}/../src/cmd_parser.cpp
 	${tests_SOURCE_DIR}/../src/server.cpp
 	${tests_SOURCE_DIR}/../src/protocol/detail/make.cpp

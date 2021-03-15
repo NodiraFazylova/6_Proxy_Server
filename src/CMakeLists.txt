@@ -4,6 +4,7 @@ project(yaps)
 
 #source files
 file(GLOB_RECURSE sources
+	cache.cpp
 	server.cpp
 	cmd_parser.cpp
 	main.cpp
