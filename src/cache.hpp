@@ -1,9 +1,9 @@
 #ifndef CACHE_HPP
 #define CACHE_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <boost/asio.hpp>
 
@@ -31,7 +31,7 @@ public:
 
     void insert_file( const std::string & command, const std::string & file );
 
-    bool get_file( const std::string & command, std::string & file );
+    std::string get_file( const std::string & command );
 
 private:
     // use pimpl idiom https://en.wikibooks.org/wiki/C%2B%2B_Programming/Idioms#Pointer_To_Implementation_(pImpl)
