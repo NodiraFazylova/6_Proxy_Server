@@ -24,7 +24,15 @@ public:
 
     void insert( timed_command command )
     {
-        auto pos = m_queue.find_by_command( command.command_hash );
+        auto pos = std::begin( m_queue );
+        for( auto end_pos = std::end( m_queue ); pos != end_pos; pos = std::next( pos ) )
+        {
+            if( pos->command_hash == command.command_hash )
+            {
+                break;
+            }
+        }
+
         if( pos != std::end( m_queue ) )
         {
             auto node = m_queue.extract( pos );
@@ -42,12 +50,12 @@ public:
         return m_mtx;
     }
 
-    bool empty()
+    bool empty() const
     {
         return m_queue.empty();
     }
 
-    size_t get_front_command()
+    size_t get_front_command() const
     {
         return m_queue.begin()->command_hash;
     }
@@ -55,21 +63,6 @@ public:
     void delete_front_command()
     {
         m_queue.erase( m_queue.begin() );
-    }
-
-private:
-    auto find_by_command( const size_t command_hash )
-    {
-        auto pos = std::begin( m_queue );
-        for( auto end_pos = std::end( m_queue ); pos != end_pos; pos = std::next( pos ) )
-        {
-            if( pos->command_hash == command_hash )
-            {
-                break;
-            }
-        }
-
-        return pos;
     }
 
 private:
