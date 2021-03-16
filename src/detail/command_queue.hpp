@@ -67,7 +67,7 @@ public:
 
 private:
 
-    std::mutex              m_mtx;
+    mutable std::mutex              m_mtx;
     std::set<timed_command> m_queue;
 };
 
