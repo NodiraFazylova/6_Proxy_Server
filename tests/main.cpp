@@ -1,6 +1,11 @@
+#include <random>
 #include <sstream>
 #include <string>
+#include <vector>
 
+#include <boost/asio.hpp>
+
+#include "cache.hpp"
 #include "logger.h"
 #include "cmd_parser.hpp"
 #include "protocol/protocol.hpp"
@@ -287,6 +292,27 @@ TEST_CASE( "protocol unit test", "[protocol]" )
             REQUIRE( protocol.file_path == received_protocol.file_path );
         }
     }
+}
+
+TEST_CASE( "cache unit test", "[cahce]" )
+{
+    boost::asio::io_context io_context;
+
+    // uncomment for enable logging
+    proxy_server_6::cache cache( io_context, 5, 1024, true );
+
+    const size_t min_filename_len = 10;
+    const size_t max_filename_len = 40;
+    
+    const size_t min_file_len = 100;
+    const size_t max_file_len = 528;
+
+    const size_t files_count = 100;
+
+    std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
+    std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
+
+
 }
 
 TEST_CASE( "create server", "[server]" )
