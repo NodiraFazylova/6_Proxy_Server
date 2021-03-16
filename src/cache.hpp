@@ -7,6 +7,8 @@
 
 #include <boost/asio.hpp>
 
+#include "error.hpp"
+
 namespace proxy_server_6
 {
 
@@ -27,11 +29,11 @@ private:
 
 public:
 
-    std::vector<std::string> get_cached_files() const;
+    std::vector<std::string> get_cached_files( error::errc & errc ) const;
 
-    void insert_file( const std::string & filename, const std::string & file );
+    void insert_file( const std::string & filename, const std::string & file, error::errc & errc );
 
-    std::string get_file( const std::string & filename ) const;
+    std::string get_file( const std::string & filename, error::errc & errc ) const;
 
 private:
     // use pimpl idiom https://en.wikibooks.org/wiki/C%2B%2B_Programming/Idioms#Pointer_To_Implementation_(pImpl)

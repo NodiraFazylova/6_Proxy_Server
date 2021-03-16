@@ -14,6 +14,7 @@
 #include "cache.hpp"
 #include "detail/bucket.hpp"
 #include "detail/command_queue.hpp"
+#include "error.hpp"
 #include "logger.h"
 
 namespace proxy_server_6
@@ -39,7 +40,7 @@ public:
     }
 
 
-    std::vector<std::string> get_cached_files() const
+    std::vector<std::string> get_cached_files( error::errc & errc ) const
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -69,7 +70,7 @@ public:
     }
 
 
-    void insert_file( const std::string & filename, const std::string & file )
+    void insert_file( const std::string & filename, const std::string & file, error::errc & errc )
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -95,7 +96,7 @@ public:
         }
         else
         {
-            m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, filename, file ) );
+            m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, filename, file, errc ) );
         }
 
         LOG_IF( m_verbose,
@@ -105,7 +106,7 @@ public:
     }
 
 
-    void delete_oldest_file( const std::string & filename, const std::string & file )
+    void delete_oldest_file( const std::string & filename, const std::string & file, error::errc & errc )
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -131,7 +132,7 @@ public:
         m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) - old_file.size() );
         bucket.erase( oldest_command );
 
-        m_io_context.post( std::bind( &cache_impl::insert_file, this, filename, file ) );
+        m_io_context.post( std::bind( &cache_impl::insert_file, this, filename, file, errc ) );
 
         LOG_IF( m_verbose,
                 std::cout,
@@ -140,7 +141,7 @@ public:
     }
 
 
-    std::string get_file( const std::string & filename ) const
+    std::string get_file( const std::string & filename, error::errc & errc ) const
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -179,21 +180,21 @@ cache::cache( boost::asio::io_context & io_context, size_t bucket_count, std::si
 cache::~cache() = default;
 
 
-std::vector<std::string> cache::get_cached_files() const
+std::vector<std::string> cache::get_cached_files( error::errc & errc ) const
 {
-    m_impl->get_cached_files();
+    m_impl->get_cached_files(errc);
 }
 
 
-void cache::insert_file( const std::string & filename, const std::string & file )
+void cache::insert_file( const std::string & filename, const std::string & file, error::errc & errc )
 {
-    m_impl->insert_file(filename, file);
+    m_impl->insert_file(filename, file, errc );
 }
 
 
-std::string cache::get_file( const std::string & filename ) const
+std::string cache::get_file( const std::string & filename, error::errc & errc ) const
 {
-    return m_impl->get_file( filename);
+    return m_impl->get_file( filename, errc);
 }
 
 } // namespace proxy_server_6
