@@ -39,7 +39,7 @@ public:
     }
 
 
-    std::vector<std::string> get_cached_files()
+    std::vector<std::string> get_cached_files() const
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -69,7 +69,7 @@ public:
     }
 
 
-    void insert_file( const std::string & command, const std::string & file )
+    void insert_file( const std::string & filename, const std::string & file )
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -81,7 +81,7 @@ public:
                 "cache::insert_file(" << file << ")"
         );
 
-        size_t command_hash = std::hash<std::string>{}(command);
+        size_t command_hash = std::hash<std::string>{}(filename);
         size_t index = command_hash % m_data.size();
 
         if( m_cur_size.load( std::memory_order_acquire ) + file.size() > m_max_size )
@@ -95,7 +95,7 @@ public:
         }
         else
         {
-            m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, command, file ) );
+            m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, filename, file ) );
         }
 
         LOG_IF( m_verbose,
@@ -105,7 +105,7 @@ public:
     }
 
 
-    void delete_oldest_file( const std::string & command, const std::string & file )
+    void delete_oldest_file( const std::string & filename, const std::string & file )
     {
         LOG_IF( m_verbose,
                 std::cout,
@@ -131,7 +131,7 @@ public:
         m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) - old_file.size() );
         bucket.erase( oldest_command );
 
-        m_io_context.post( std::bind( &cache_impl::insert_file, this, command, file ) );
+        m_io_context.post( std::bind( &cache_impl::insert_file, this, filename, file ) );
 
         LOG_IF( m_verbose,
                 std::cout,
@@ -140,14 +140,14 @@ public:
     }
 
 
-    std::string get_file( const std::string & command )
+    std::string get_file( const std::string & filename ) const
     {
         LOG_IF( m_verbose,
                 std::cout,
                 "cache::get_file() - BEGIN"
         );
 
-        size_t command_hash = std::hash<std::string>{}(command);
+        size_t command_hash = std::hash<std::string>{}(filename);
         size_t index = command_hash % m_data.size();
 
         std::lock_guard locker{ m_data[index].get_mutex() };
@@ -179,21 +179,21 @@ cache::cache( boost::asio::io_context & io_context, size_t bucket_count, std::si
 cache::~cache() = default;
 
 
-std::vector<std::string> cache::get_cached_files()
+std::vector<std::string> cache::get_cached_files() const
 {
     m_impl->get_cached_files();
 }
 
 
-void cache::insert_file( const std::string & command, const std::string & file )
+void cache::insert_file( const std::string & filename, const std::string & file )
 {
-    m_impl->insert_file(command, file);
+    m_impl->insert_file(filename, file);
 }
 
 
-std::string cache::get_file( const std::string & command )
+std::string cache::get_file( const std::string & filename ) const
 {
-    return m_impl->get_file( command);
+    return m_impl->get_file( filename);
 }
 
 } // namespace proxy_server_6

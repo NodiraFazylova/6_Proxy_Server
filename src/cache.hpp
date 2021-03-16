@@ -27,11 +27,11 @@ private:
 
 public:
 
-    std::vector<std::string> get_cached_files();
+    std::vector<std::string> get_cached_files() const;
 
-    void insert_file( const std::string & command, const std::string & file );
+    void insert_file( const std::string & filename, const std::string & file );
 
-    std::string get_file( const std::string & command );
+    std::string get_file( const std::string & filename ) const;
 
 private:
     // use pimpl idiom https://en.wikibooks.org/wiki/C%2B%2B_Programming/Idioms#Pointer_To_Implementation_(pImpl)
