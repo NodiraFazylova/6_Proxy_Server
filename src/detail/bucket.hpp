@@ -37,18 +37,18 @@ public:
     }
 
 
-    std::string get_file( const size_t command_hash )
+    std::string get_file( const size_t command_hash ) const
     {
         if( m_buckets.count( command_hash ) != 0 )
         {
-            return m_buckets[command_hash];
+            return m_buckets.at(command_hash);
         }
 
         return {};
     }
 
 
-    void get_all_files(std::vector<std::string> & files)
+    void get_all_files(std::vector<std::string> & files) const
     {
         for( auto & [hash, file] : m_buckets )
         {
@@ -56,13 +56,14 @@ public:
         }
     }
 
-    std::mutex & get_mutex()
+    // for the sake of simplicity, let's make a design error and label a function that is not "const" 
+    std::mutex & get_mutex() const
     {
         return m_mtx;
     }
 
 private:
-    std::mutex                      m_mtx;
+    mutable std::mutex              m_mtx;
     std::map<size_t, std::string>   m_buckets;
 };
 
