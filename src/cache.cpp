@@ -1,5 +1,6 @@
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <iterator>
 #include <iostream>
 #include <memory>
