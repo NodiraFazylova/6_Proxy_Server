@@ -22,17 +22,21 @@
     #define RED "\x1b[31m" /* красный */
     #define NC "\x1b[0m" /* сбрасываем на дефолтный */
   
-    #define LOG_ERROR_C(file, ...)        fprintf(file, RED "[ERROR]" NC ": " __VA_ARGS__)
-    #define LOG_DEBUG_C(file, ...)        fprintf(file, "[DEBUG]: " __VA_ARGS__ )
-    #define LOG_IF_C(cond, file,  ...)    if((cond)) \
-                                              LOG_DEBUG_C(file, ...)
+    #define LOG_ERROR_C(file, ...)        fprintf( file, RED "[ERROR]" NC ": " __VA_ARGS__ )
+    #define LOG_DEBUG_C(file, ...)        fprintf( file, "[DEBUG]: " __VA_ARGS__ )
+    #define LOG_IF_C(cond, file,  ...)    if( ( cond ) ) \
+                                              LOG_DEBUG_C( file, ... )
     #endif /* OS */
 
   #ifdef __cplusplus
-    #define LOG_ERROR(OS, message)        OS << RED "[ERROR]" NC ": " << message << std::endl
-    #define LOG_DEBUG(OS, message)        OS << "[DEBUG]: " << message << std::endl;
-    #define LOG_IF(cond, OS, message)     if((cond)) \
-                                              LOG_DEBUG(OS, message)
+    #include <functional>
+
+    #include <utils/osyncstream.hpp>
+
+    #define LOG_ERROR(OS, message)        proxy_server_6::osyncstream{ std::ref( OS ) } << RED "[ERROR]" NC ": " << message << std::endl
+    #define LOG_DEBUG(OS, message)        proxy_server_6::osyncstream{ std::ref( OS ) } << "[DEBUG]: " << message << std::endl
+    #define LOG_IF(cond, OS, message)     if( ( cond ) ) \
+                                              LOG_DEBUG( OS, message )
   #else
     #define LOG_ERROR   LOG_ERROR_C
     #define LOG_DEBUG   LOG_DEBUG_C
