@@ -4,12 +4,16 @@
 #include <vector>
 
 #include <boost/asio.hpp>
+#include <boost/asio/post.hpp>
+#include <boost/thread.hpp>
 
 #include "cache.hpp"
+#include "error.hpp"
 #include "logger.h"
 #include "cmd_parser.hpp"
 #include "protocol/protocol.hpp"
 #include "server.hpp"
+#include "utils/run_io_context.hpp"
 
 #define CATCH_CONFIG_RUNNER
 #include "catch2/catch.hpp"
@@ -301,18 +305,113 @@ TEST_CASE( "cache unit test", "[cahce]" )
     // uncomment for enable logging
     proxy_server_6::cache cache( io_context, 5, 1024, true );
 
-    const size_t min_filename_len = 10;
-    const size_t max_filename_len = 40;
+    // and comment this
+    // proxy_server_6::cache cache(io_context);
+
+    SECTION( "insert/get file in single thread " )
+    {
+        const size_t min_filename_len = 10;
+        const size_t max_filename_len = 25;//40;
+
+        const size_t min_file_len = 20;//100;
+        const size_t max_file_len = 25;//528;
+
+        const size_t files_count = 100;
+
+        const size_t workers_count = 4;
+
+        std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
+        std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
+
+        tests::files cached_files;
+        for( size_t i = 0, n = files_count * 4; i < n; ++i )
+        {
+            tests::insert_file( filenames[i % files_count], files[i % files_count], cache );
+            tests::get_file( filenames[i % files_count], cache, cached_files );
+        }
+
+        for( auto i = 0; i < cached_files.files.size(); ++i )
+        {
+            REQUIRE( files[i % files_count] == cached_files.files[i] );
+        }
+    }
+
+    SECTION( "insert/get files in multithreading" )
+    {
+        const size_t min_filename_len = 10;
+        const size_t max_filename_len = 25;//40;
+
+        const size_t min_file_len = 20;//100;
+        const size_t max_file_len = 25;//528;
+
+        const size_t files_count = 100;
+
+        const size_t workers_count = 4;
+
+        std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
+        std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
+
+        boost::thread_group workers;
+        for( int64_t i = 0; i < workers_count; ++i )
+        {
+            workers.create_thread( proxy_server_6::run_io_context( io_context ) );
+        }
+
+        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */ 
+        tests::files cached_files;
+        for( size_t i = 0, n = files_count * 4; i < n; ++i )
+        {
+            bool inserting = tests::rand( uni );
+            if( inserting || !i )
+            {
+                boost::asio::post( std::bind(&tests::insert_file, std::cref( filenames[i % files_count] ), std::cref( files[i % files_count] ), std::ref( cache )) );
+            }
+            else
+            {
+                boost::asio::post( std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
+            }
+        }
+
+        workers.join_all();
+
+        // in this case success is not abort program ))
+    }
+
+
+    SECTION( "getting all cached files" )
+    {
+        /*
+        * since we can't guarantee the order in which the files will be inserted in multithreaded mode, we execute several inserts in one thread and then get all the cached files
+        */ 
+        const size_t min_filename_len = 10;
+        const size_t max_filename_len = 15;
+
+        const size_t min_file_len = 40;
+        const size_t max_file_len = 100;
+
+        const size_t files_count = 30;
+
+        const size_t workers_count = 4;
+
+        std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
+        std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
+
+        for( auto i = 0; i < files_count; ++i )
+        {
+            tests::insert_file( filenames[i], files[i], cache );
+        }
+
+        error::errc errc;
+        std::vector<std::string> cached_files( cache.get_cached_files(errc) );
+
+        REQUIRE( errc == error::errc::not_error );
+
+        for( auto i = 0; i < files_count; ++i )
+        {
+            REQUIRE( files[i] == cached_files[i] );
+        }
+    }
     
-    const size_t min_file_len = 100;
-    const size_t max_file_len = 528;
-
-    const size_t files_count = 100;
-
-    std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
-    std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
-
-
 }
 
 TEST_CASE( "create server", "[server]" )
