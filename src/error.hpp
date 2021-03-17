@@ -1,5 +1,7 @@
 #ifndef ERROR_HPP
-#define ERORR_HPP
+#define ERROR_HPP
+
+#include <stdint.h>
 
 namespace error
 {
