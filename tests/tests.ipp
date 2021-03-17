@@ -14,7 +14,7 @@ bool operator== ( const proxy_server_6::server::config_t & lh, const proxy_serve
 size_t rand( std::uniform_int_distribution<size_t> & distr )
 {
     std::random_device                      rd;   /**< only used once to initialise (seed) engine */
-    std::mt19937                            rng( rd );  /**< random-number engine used (Mersenne-Twister in this case) */
+    std::mt19937                            rng( rd() );  /**< random-number engine used (Mersenne-Twister in this case) */
 
     return distr( rng );
 }
@@ -49,14 +49,16 @@ struct files
 
 void insert_file( const std::string & filename, const std::string & file, proxy_server_6::cache & cache )
 {
-    cache.insert_file( filename, file );
+    error::errc errc;
+    cache.insert_file( filename, file, errc );
 }
 
 
 void get_file( const std::string & filename, const proxy_server_6::cache & cache, files & buffer )
 {
     std::lock_guard lock( buffer.mtx );
-    buffer.files.emplace_back( cache.get_file( filename ) );
+    error::errc errc;
+    buffer.files.emplace_back( cache.get_file( filename, errc ) );
 }
 
 
