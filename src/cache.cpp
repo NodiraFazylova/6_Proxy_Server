@@ -83,7 +83,7 @@ public:
                 "cache::insert_file(" << file << ")"
         );
 
-        proxy_server_6::detail::file_queue::timed_command command{ std::chrono::system_clock::now(), std::hash<std::string>{}(filename) };
+        proxy_server_6::detail::file_queue::node_t command{ std::chrono::system_clock::now(), std::hash<std::string>{}(filename) };
         std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
         if( m_command_by_time.contain( command ) )
         {
@@ -96,12 +96,12 @@ public:
                 delete_oldest_file( errc );
             }
 
-            size_t index = command.command_hash % m_data.size();
+            size_t index = command.filename_hash % m_data.size();
 
             std::lock_guard data_locker{ m_data[index].get_mutex() };
 
             m_command_by_time.push( command );
-            m_data[index].insert( command.command_hash, file );
+            m_data[index].insert( command.filename_hash, file );
             m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
         }
 
@@ -121,21 +121,21 @@ public:
 
         std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
         
-        proxy_server_6::detail::file_queue::timed_command oldest_command;
+        proxy_server_6::detail::file_queue::node_t oldest_command;
         size_t index;
         if( !m_command_by_time.empty() )
         {
             oldest_command  = m_command_by_time.front();
-            index           = oldest_command.command_hash % m_data.size();
+            index           = oldest_command.filename_hash % m_data.size();
             m_command_by_time.pop();
         }
         
-        std::lock_guard data_locker{ m_data[oldest_command.command_hash].get_mutex() };
+        std::lock_guard data_locker{ m_data[oldest_command.filename_hash].get_mutex() };
         auto & bucket     = m_data[index];
-        const auto & old_file = bucket.get_file( oldest_command.command_hash );
+        const auto & old_file = bucket.get_file( oldest_command.filename_hash );
 
         m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) - old_file.size() );
-        bucket.erase( oldest_command.command_hash );
+        bucket.erase( oldest_command.filename_hash );
 
         LOG_IF( m_verbose,
                 std::cout,
