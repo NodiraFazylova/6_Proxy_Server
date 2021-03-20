@@ -79,13 +79,13 @@ private:
 
 
 inline
-bool operator< ( const command_queue::timed_command & lh, const command_queue::timed_command & rh )
+bool operator< ( const file_queue::timed_command & lh, const file_queue::timed_command & rh )
 {
     return  (lh.time < rh.time) ||
         ((lh.time == rh.time) && (lh.command_hash < rh.command_hash));
 }
 
-bool operator== ( const command_queue::timed_command & lh, const command_queue::timed_command & rh )
+bool operator== ( const file_queue::timed_command & lh, const file_queue::timed_command & rh )
 {
     return (lh.command_hash == rh.command_hash);
 }
