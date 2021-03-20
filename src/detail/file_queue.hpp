@@ -14,10 +14,10 @@ namespace detail
 class file_queue
 {
 public:
-    struct timed_command
+    struct node_t
     {
         std::chrono::system_clock::time_point time;
-        size_t                                command_hash;
+        size_t                                filename_hash;
     };
 
     file_queue() = default;
@@ -31,9 +31,9 @@ public:
     file_queue( file_queue && other ) = delete;
     file_queue & operator=( file_queue && other ) = delete;
 
-    void push( timed_command command )
+    void push( const node_t & node )
     {
-        m_queue.emplace( std::move( command ) );
+        m_queue.emplace(  node );
     }
 
     std::mutex & get_mutex()
@@ -46,7 +46,7 @@ public:
         return m_queue.empty();
     }
 
-    timed_command front() const
+    node_t front()
     {
         return *m_queue.begin();
     }
@@ -56,38 +56,38 @@ public:
         m_queue.erase( m_queue.begin() );
     }
 
-    bool contain( const timed_command & command ) const
+    bool contain( const node_t & node ) const
     {
-        return m_queue.count( command );
+        return m_queue.count( node );
     }
 
-    void update( const timed_command & command )
+    void update( const node_t & node )
     {
-        auto pos          = m_queue.find( command );
+        auto pos          = m_queue.find( node );
 
-        auto node         = m_queue.extract( pos );
-        node.value().time = command.time;
+        auto node_t         = m_queue.extract( pos );
+        node_t.value().time = node.time;
         
-        m_queue.insert( std::move( node ) );
+        m_queue.insert( std::move( node_t ) );
     }
 
 private:
 
-    mutable std::mutex      m_mtx;
-    std::set<timed_command> m_queue;
+    mutable std::mutex  m_mtx;
+    std::set<node_t>    m_queue;
 };
 
 
 inline
-bool operator< ( const file_queue::timed_command & lh, const file_queue::timed_command & rh )
+bool operator< ( const file_queue::node_t & lh, const file_queue::node_t & rh )
 {
     return  (lh.time < rh.time) ||
-        ((lh.time == rh.time) && (lh.command_hash < rh.command_hash));
+        ((lh.time == rh.time) && (lh.filename_hash < rh.filename_hash));
 }
 
-bool operator== ( const file_queue::timed_command & lh, const file_queue::timed_command & rh )
+bool operator== ( const file_queue::node_t & lh, const file_queue::node_t & rh )
 {
-    return (lh.command_hash == rh.command_hash);
+    return (lh.filename_hash == rh.filename_hash);
 }
 
 }   // namespace detail
