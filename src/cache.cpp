@@ -13,8 +13,8 @@
 #include <boost/asio/post.hpp>
 
 #include "cache.hpp"
-#include "detail/bucket.hpp"
-#include "detail/command_queue.hpp"
+#include "detail/file_map.hpp"
+#include "detail/file_queue.hpp"
 #include "error.hpp"
 #include "logger.h"
 
@@ -83,21 +83,26 @@ public:
                 "cache::insert_file(" << file << ")"
         );
 
-        size_t command_hash = std::hash<std::string>{}(filename);
-        size_t index = command_hash % m_data.size();
-
-        if( m_cur_size.load( std::memory_order_acquire ) + file.size() > m_max_size )
+        proxy_server_6::detail::file_queue::timed_command command{ std::chrono::system_clock::now(), std::hash<std::string>{}(filename) };
+        std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
+        if( m_command_by_time.contain( command ) )
         {
-            std::lock_guard data_locker{ m_data[index].get_mutex() };
-            std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
-
-            m_command_by_time.insert( { std::chrono::system_clock::now(), command_hash } );
-            m_data[index].insert( command_hash, file );
-            m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
+            m_command_by_time.update( command );
         }
-        else
+        else 
         {
-            m_io_context.post( std::bind( &cache_impl::delete_oldest_file, this, filename, file, errc ) );
+            if( m_cur_size.load( std::memory_order_acquire ) + file.size() >= m_max_size )
+            {
+                delete_oldest_file( errc );
+            }
+
+            size_t index = command.command_hash % m_data.size();
+
+            std::lock_guard data_locker{ m_data[index].get_mutex() };
+
+            m_command_by_time.push( command );
+            m_data[index].insert( command.command_hash, file );
+            m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) + file.size() );
         }
 
         LOG_IF( m_verbose,
@@ -107,33 +112,30 @@ public:
     }
 
 
-    void delete_oldest_file( const std::string & filename, const std::string & file, error::errc & errc )
+    void delete_oldest_file( error::errc & errc )
     {
         LOG_IF( m_verbose,
                 std::cout,
                 "cache::delete_oldest_file() - BEGIN"
         );
 
-        std::chrono::system_clock::time_point min_time = std::chrono::system_clock::now();
         std::lock_guard queue_locker{ m_command_by_time.get_mutex() };
         
-        size_t oldest_command;
+        proxy_server_6::detail::file_queue::timed_command oldest_command;
         size_t index;
         if( !m_command_by_time.empty() )
         {
-            oldest_command  = m_command_by_time.get_front_command();
-            index           = oldest_command % m_data.size();
-            m_command_by_time.delete_front_command();
+            oldest_command  = m_command_by_time.front();
+            index           = oldest_command.command_hash % m_data.size();
+            m_command_by_time.pop();
         }
         
-        std::lock_guard data_locker{ m_data[oldest_command].get_mutex() };
+        std::lock_guard data_locker{ m_data[oldest_command.command_hash].get_mutex() };
         auto & bucket     = m_data[index];
-        const auto & old_file = bucket.get_file( oldest_command );
+        const auto & old_file = bucket.get_file( oldest_command.command_hash );
 
         m_cur_size.store( m_cur_size.load( std::memory_order_acquire ) - old_file.size() );
-        bucket.erase( oldest_command );
-
-        m_io_context.post( std::bind( &cache_impl::insert_file, this, filename, file, errc ) );
+        bucket.erase( oldest_command.command_hash );
 
         LOG_IF( m_verbose,
                 std::cout,
@@ -163,13 +165,13 @@ public:
     }
 
 private:
-    boost::asio::io_context                   & m_io_context;
+    boost::asio::io_context                       & m_io_context;
 
-    std::atomic_size_t                          m_cur_size;
-    size_t                                      m_max_size;
-    std::vector<proxy_server_6::detail::bucket> m_data;
-    proxy_server_6::detail::command_queue       m_command_by_time;
-    bool                                        m_verbose;
+    std::atomic_size_t                              m_cur_size;
+    size_t                                          m_max_size;
+    std::vector<proxy_server_6::detail::file_map>   m_data;
+    proxy_server_6::detail::file_queue              m_command_by_time;
+    bool                                            m_verbose;
 };
 
 
