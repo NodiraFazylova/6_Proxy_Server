@@ -1,5 +1,5 @@
-#ifndef BUCKET_HPP
-#define BUCKET_HPP
+#ifndef FILE_MAP_HPP
+#define FILE_MAP_HPP
 
 #include <map>
 #include <mutex>
@@ -10,38 +10,38 @@ namespace proxy_server_6
 namespace detail
 {
 
-class bucket
+class file_map
 {
 public:
-    bucket() = default;
-    ~bucket() = default;
+    file_map() = default;
+    ~file_map() = default;
 
 
-    bucket( bucket & other ) = delete;
-    bucket & operator=( bucket & other ) = delete;
+    file_map( file_map & other ) = delete;
+    file_map & operator=( file_map & other ) = delete;
 
 
-    bucket( cache && other ) = delete;
-    bucket & operator=( bucket && other ) = delete;
+    file_map( file_map && other ) = delete;
+    file_map & operator=( file_map && other ) = delete;
 
 
-    void insert( const size_t command_hash, const std::string & file )
+    void insert( const size_t filename_hash, const std::string & file )
     {
-        m_buckets.emplace(command_hash, file);
+        m_files.emplace( filename_hash, file);
     }
 
 
     void erase( const size_t command_hash )
     {
-        m_buckets.erase( command_hash );
+        m_files.erase( command_hash );
     }
 
 
     std::string get_file( const size_t command_hash ) const
     {
-        if( m_buckets.count( command_hash ) != 0 )
+        if( m_files.count( command_hash ) != 0 )
         {
-            return m_buckets.at(command_hash);
+            return m_files.at(command_hash);
         }
 
         return {};
@@ -50,7 +50,7 @@ public:
 
     void get_all_files(std::vector<std::string> & files) const
     {
-        for( auto & [hash, file] : m_buckets )
+        for( auto & [hash, file] : m_files )
         {
             files.emplace_back( file );
         }
@@ -64,11 +64,11 @@ public:
 
 private:
     mutable std::mutex              m_mtx;
-    std::map<size_t, std::string>   m_buckets;
+    std::map<size_t, std::string>   m_files;
 };
 
 }   // namespace detail
 
 }   // namespace proxy_server_6
 
-#endif // !BUCKET_HPP
+#endif // !FILE_MAP_HPP
