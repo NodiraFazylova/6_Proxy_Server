@@ -32,6 +32,8 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
 {
     using namespace tests;
 
+    logger::init_console_logger();
+
     proxy_server_6::server::config_t default_config;
     proxy_server_6::server::config_t config;
     bool help_opt = false;
@@ -89,11 +91,15 @@ TEST_CASE( "Test command line arguments parser:", "[cmd_parser]" )
         bool is_equal = ( config == default_config );
         REQUIRE_FALSE( is_equal );
     }
+
+    logger::deinit_logger();
 }
 
 
 TEST_CASE( "protocol unit test", "[protocol]" )
 {
+    logger::init_console_logger();
+
     SECTION( "invalid protocols" )
     {
         SECTION( "empty protocol" )
@@ -296,6 +302,8 @@ TEST_CASE( "protocol unit test", "[protocol]" )
             REQUIRE( protocol.file_path == received_protocol.file_path );
         }
     }
+
+    logger::deinit_logger();
 }
 
 TEST_CASE( "cache unit test", "[cahce]" )
