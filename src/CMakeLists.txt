@@ -10,6 +10,7 @@ file(GLOB_RECURSE sources
 	main.cpp
 	protocol/detail/make.cpp
 	protocol/detail/parse.cpp
+	../3rdparty/logger/logger.cpp
 )
 
 add_executable(${PROJECT_NAME} ${sources})
@@ -43,7 +44,3 @@ else()
 		${BOOST_LIBRARY}/libboost_thread-clangw11-mt-x64-1_74.lib
 	)
 endif()
-
-# uncomment this to enable logger
-target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_ENABLE)
-

@@ -9,6 +9,7 @@ file(GLOB_RECURSE sources
 	${tests_SOURCE_DIR}/../src/server.cpp
 	${tests_SOURCE_DIR}/../src/protocol/detail/make.cpp
 	${tests_SOURCE_DIR}/../src/protocol/detail/parse.cpp
+	${tests_SOURCE_DIR}/../3rdparty/logger/logger.cpp
 	main.cpp
 )
 
@@ -44,9 +45,6 @@ else()
 		${BOOST_LIBRARY}/libboost_thread-clangw11-mt-x64-1_74.lib
 	)
 endif()
-
-# uncomment this to enable logger
-target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_ENABLE)
 
 # Path to additional CMake module
 set(CMAKE_MODULE_PATH ${Proxy_Server_6_SOURCE_DIR}/cmake/tests ${CMAKE_MODULE_PATH})
