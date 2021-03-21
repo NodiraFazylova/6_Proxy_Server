@@ -158,7 +158,7 @@ cache::~cache() = default;
 
 std::vector<std::string> cache::get_cached_files( error::errc & errc ) const
 {
-    m_impl->get_cached_files(errc);
+    return m_impl->get_cached_files(errc);
 }
 
 
