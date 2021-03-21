@@ -31,16 +31,16 @@ if(UNIX)
 else()
 	target_link_libraries(${PROJECT_NAME}
 		# debug
-		${BOOST_LIBRARY}/libboost_date_time-clangw10-mt-gd-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_regex-clangw10-mt-gd-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_chrono-clangw10-mt-gd-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_thread-clangw10-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_date_time-clangw11-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_regex-clangw11-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_chrono-clangw11-mt-gd-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_thread-clangw11-mt-gd-x64-1_74.lib
 		
 		# release
-		${BOOST_LIBRARY}/libboost_date_time-clangw10-mt-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_regex-clangw10-mt-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_chrono-clangw10-mt-x64-1_74.lib
-		${BOOST_LIBRARY}/libboost_thread-clangw10-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_date_time-clangw11-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_regex-clangw11-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_chrono-clangw11-mt-x64-1_74.lib
+		${BOOST_LIBRARY}/libboost_thread-clangw11-mt-x64-1_74.lib
 	)
 endif()
 
