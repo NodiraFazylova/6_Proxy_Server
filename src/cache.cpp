@@ -9,9 +9,6 @@
 #include <vector>
 #include <utility>
 
-#include <boost/asio.hpp>
-#include <boost/asio/post.hpp>
-
 #include "cache.hpp"
 #include "detail/file_map.hpp"
 #include "detail/file_queue.hpp"
@@ -26,9 +23,8 @@ class cache::cache_impl
 
 public:
     
-    explicit cache_impl( boost::asio::io_context & io_context, size_t bucket_count = 5, std::size_t max_data_size = 1024, bool verbose = false )
-        : m_io_context( io_context )
-        , m_cur_size( 0 )
+    explicit cache_impl( size_t bucket_count = 5, std::size_t max_data_size = 1024, bool verbose = false )
+        : m_cur_size( 0 )
         , m_max_size( max_data_size )
         , m_data( bucket_count )
         , m_command_by_time()
@@ -156,10 +152,12 @@ private:
         {
             oldest_command = m_command_by_time.front();
             index = oldest_command.filename_hash % m_data.size();
+LOG_DEBUG( std::cout, "delete_oldest_file() index: " << index );
             m_command_by_time.pop();
         }
-
+LOG_DEBUG( std::cout, "delete_oldest_file() getting mutex" );
         std::lock_guard data_locker{ m_data[index].get_mutex() };
+LOG_DEBUG( std::cout, "delete_oldest_file() getting buacket" );
         auto & bucket = m_data[index];
         const auto & old_file = bucket.get_file( oldest_command.filename_hash );
 
@@ -175,8 +173,6 @@ private:
 
 private:
 
-    boost::asio::io_context                       & m_io_context;
-
     std::atomic_size_t                              m_cur_size;
     size_t                                          m_max_size;
     std::vector<proxy_server_6::detail::file_map>   m_data;
@@ -185,8 +181,8 @@ private:
 };
 
 
-cache::cache( boost::asio::io_context & io_context, size_t bucket_count, std::size_t max_data_size, bool verbose )
-    : m_impl( std::make_unique<cache::cache_impl>( io_context, bucket_count, max_data_size, verbose ) )
+cache::cache( size_t bucket_count, std::size_t max_data_size, bool verbose )
+    : m_impl( std::make_unique<cache::cache_impl>( bucket_count, max_data_size, verbose ) )
 {}
 
 

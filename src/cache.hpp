@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/asio.hpp>
-
 #include "error.hpp"
 
 namespace proxy_server_6
@@ -16,7 +14,7 @@ class cache
 {
 
 public:
-    explicit cache( boost::asio::io_context & io_context, size_t bucket_count = 5, std::size_t max_data_size = 1024, bool verbose = false );
+    explicit cache( size_t bucket_count = 5, std::size_t max_data_size = 1024, bool verbose = false );
 
     ~cache();
 
