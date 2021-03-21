@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "cache.hpp"
-#include "logger.h"
+#include "logger/logger.hpp"
 #include "server.hpp"
 #include "utils/is_valid_config.hpp"
 #include "utils/run_io_context.hpp"
@@ -22,38 +22,35 @@ server::server( server::config_t config )
     , m_workers_count( config.workers_count )
     , m_verbose( config.verbose )
 {
-    // setw(10) - length "dir_path"
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" <<  __FUNCTION__ 
-            << "() - success with config:\n"
-            << std::left << std::setw( 10 ) << "ip: "       << m_host                      << ",\n"
-            << std::left << std::setw( 10 ) << "port: "     << m_port                      << ",\n"
-            << std::left << std::setw( 10 ) << "dir_path: " << m_dir_path                  << ",\n"
-            << std::left << std::setw( 10 ) << "maxdata: "  << config.maxdata_size         << ",\n"
-            << std::left << std::setw( 10 ) << "workers: "  << m_workers_count             << ",\n"
-            << std::left << std::setw( 10 ) << "verbose: "  << std::boolalpha << m_verbose
+    logger::init_console_logger();
+
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::server() - success with config:\t"
+                  "ip: {0}, port: {1}, dir_path: {2}, maxdata: {3}, workers: {4}, verbose: {5}",
+                  m_host,
+                  m_port,
+                  m_dir_path,
+                  config.maxdata_size,
+                  m_workers_count,
+                  m_verbose
     );
 }
 
 
 server::~server()
 {
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - BEGIN"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::~server() - BEGIN" );
 
     stop();
 
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - END"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::~server() - END" );
+
+    logger::deinit_logger();
 }
 
 
 void server::start()
 {
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "()"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::start()" );
 
     m_io_context_work.emplace( boost::asio::make_work_guard( m_io_context ) );
     for( int64_t i = 0; i < m_workers_count; ++i )
@@ -65,25 +62,17 @@ void server::start()
 
 void server::stop()
 {
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - BEGIN"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::stop() - BEGIN" );
 
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - stop io_context"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::stop() - stop io_context" );
 
     m_io_context.stop();
 
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - join threads"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::stop() - join threads" );
 
     m_threads.join_all();
 
-    LOG_IF( m_verbose, std::cout, "proxy_server::server::" << __FUNCTION__
-            << "() - END"
-    );
+    LOG_TRACE_IF( m_verbose, "proxy_server::server::stop() - END" );
 }
 
 

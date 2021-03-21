@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "cmd_parser.hpp"
-#include "logger.h"
+#include "logger/logger.hpp"
 #include "server.hpp"
 
 int main( int argc, char ** argv )

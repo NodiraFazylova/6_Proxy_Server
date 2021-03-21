@@ -1,7 +1,7 @@
 #include <iostream>
 #include "string"
 
-#include "logger.h"
+#include "logger/logger.hpp"
 #include "protocol/protocol.hpp"
 
 
@@ -128,11 +128,11 @@ protocol::command_variant parse( const std::string & s )
     }
     catch( const std::exception & e )
     {
-        LOG_ERROR( std::cerr, e.what() );
+        LOG_ERROR( "protocol::parse() - EXEPTION {0}", e.what() );
     }
     catch( ... )
     {
-        LOG_ERROR( std::cerr, "unknown error in protocol::parse()" );
+        LOG_ERROR( "protocol::parse() - UNKNOWN EXCEPTION" );
     }
     
 

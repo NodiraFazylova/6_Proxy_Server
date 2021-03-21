@@ -6,7 +6,7 @@
 
 #include <boost/asio.hpp>
 
-#include "logger.h"
+#include "logger/logger.hpp"
 
 namespace proxy_server_6
 {
@@ -30,11 +30,11 @@ public:
 			}
 			catch( std::exception & e )
 			{
-				LOG_ERROR( std::cerr, "run_io_context_t: exeption" << e.what() );
+				LOG_ERROR( "run_io_context_t(): EXCEPTION: {0}", e.what() );
 			}
 			catch( ... )
 			{
-				LOG_ERROR( std::cerr, "run_io_context_t: unknown exception" );
+				LOG_ERROR( "run_io_context_t(): UNKNOWN EXCEPTION" );
 			}
 		}
 	}

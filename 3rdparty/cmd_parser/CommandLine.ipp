@@ -130,8 +130,8 @@ void CommandLine::parse( int argc, char * argv[] ) const
                 // In all other cases there must be a value.
                 else if( value.empty() )
                 {
-                   LOG_ERROR(std::cerr, "Failed to parse command line arguments: "
-                               "Missing value for argument \"" << flag << "\"!" );
+                   LOG_ERROR("CommandLine::addArgument() - Failed to parse command line arguments,"
+                               "missing value for argument \"{0}\"", flag );
 
                    set_help_opt_if();
                 }
@@ -159,7 +159,7 @@ void CommandLine::parse( int argc, char * argv[] ) const
         // Print a warning if there was an unknown argument.
         if( !foundArgument )
         {
-            LOG_ERROR(std::cerr, "Ignoring unknown command line argument \"" << flag << "\"." );
+            LOG_ERROR("CommandLine::addArgument() - Ignoring unknown command line argument \"{0}\"", flag );
 
             set_help_opt_if();
         }

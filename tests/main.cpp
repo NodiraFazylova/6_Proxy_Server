@@ -9,7 +9,7 @@
 
 #include "cache.hpp"
 #include "error.hpp"
-#include "logger.h"
+#include "logger/logger.hpp"
 #include "cmd_parser.hpp"
 #include "protocol/protocol.hpp"
 #include "server.hpp"
@@ -300,21 +300,20 @@ TEST_CASE( "protocol unit test", "[protocol]" )
 
 TEST_CASE( "cache unit test", "[cahce]" )
 {
-    boost::asio::io_context io_context;
-
+logger::init_console_logger();
     // uncomment for enable logging
-    proxy_server_6::cache cache( io_context, 5, 1024, true );
+    proxy_server_6::cache cache( 5, 1024, true );
 
     // and comment this
-    // proxy_server_6::cache cache(io_context);
+    // proxy_server_6::cache cache();
 
     SECTION( "insert/get file in single thread " )
     {
         const size_t min_filename_len = 10;
-        const size_t max_filename_len = 25;//40;
+        const size_t max_filename_len = 40;
 
-        const size_t min_file_len = 20;//100;
-        const size_t max_file_len = 25;//528;
+        const size_t min_file_len = 100;
+        const size_t max_file_len = 528;
 
         const size_t files_count = 100;
 
@@ -338,6 +337,8 @@ TEST_CASE( "cache unit test", "[cahce]" )
 
     SECTION( "insert/get files in multithreading" )
     {
+        boost::asio::io_context io_context;
+
         const size_t min_filename_len = 10;
         const size_t max_filename_len = 25;//40;
 
@@ -356,11 +357,13 @@ TEST_CASE( "cache unit test", "[cahce]" )
         {
             workers.create_thread( proxy_server_6::run_io_context( io_context ) );
         }
+        workers.join_all();
 
-        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */ 
+        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */
         tests::files cached_files;
         for( size_t i = 0, n = files_count * 4; i < n; ++i )
         {
+LOG_DEBUG( "iterate: {0} BEGIN", i );
             bool inserting = tests::rand( uni );
             if( inserting || !i )
             {
@@ -370,13 +373,15 @@ TEST_CASE( "cache unit test", "[cahce]" )
             {
                 boost::asio::post( std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
             }
+LOG_DEBUG( "iterate: {0} END", i );
         }
 
-        workers.join_all();
+        //workers.join_all();
+
+        io_context.stop();
 
         // in this case success is not abort program ))
     }
-
 
     SECTION( "getting all cached files" )
     {
@@ -412,6 +417,7 @@ TEST_CASE( "cache unit test", "[cahce]" )
         }
     }
     
+logger::deinit_logger();
 }
 
 TEST_CASE( "create server", "[server]" )

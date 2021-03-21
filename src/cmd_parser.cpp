@@ -7,7 +7,7 @@
 #include <variant>
 #include <vector>
 
-#include "logger.h"
+#include "logger/logger.hpp"
 #include "cmd_parser.hpp"
 #include "server.hpp"
 
