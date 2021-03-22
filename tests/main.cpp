@@ -307,7 +307,7 @@ TEST_CASE( "cache unit test", "[cahce]" )
 
     // and comment this
     // proxy_server_6::cache cache();
-/*
+
     SECTION( "insert/get file in single thread " )
     {
         const size_t min_filename_len = 10;
@@ -317,8 +317,6 @@ TEST_CASE( "cache unit test", "[cahce]" )
         const size_t max_file_len = 528;
 
         const size_t files_count = 100;
-
-        const size_t workers_count = 4;
 
         std::vector<std::string> filenames( tests::generate_file_or_filenames( files_count, min_filename_len, max_filename_len ) );
         std::vector<std::string> files( tests::generate_file_or_filenames( files_count, min_file_len, max_file_len ) );
@@ -335,16 +333,16 @@ TEST_CASE( "cache unit test", "[cahce]" )
             REQUIRE( files[i % files_count] == cached_files.files[i] );
         }
     }
-*/ /*
+
     SECTION( "insert/get files in multithreading" )
     {
         boost::asio::io_context io_context;
 
         const size_t min_filename_len = 10;
-        const size_t max_filename_len = 25;//40;
+        const size_t max_filename_len = 40;
 
-        const size_t min_file_len = 20;//100;
-        const size_t max_file_len = 25;//528;
+        const size_t min_file_len = 100;
+        const size_t max_file_len = 528;
 
         const size_t files_count = 100;
 
@@ -356,15 +354,14 @@ TEST_CASE( "cache unit test", "[cahce]" )
         boost::thread_group workers;
         for( int64_t i = 0; i < workers_count; ++i )
         {
-            workers.create_thread( proxy_server_6::run_io_context( io_context ) );
+            workers.create_thread( proxy_server_6::io_run_context_once( io_context ) );
         }
-        workers.join_all();
 
-        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */ /*
+        io_context.run();
+        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */
         tests::files cached_files;
         for( size_t i = 0, n = files_count * 4; i < n; ++i )
         {
-LOG_DEBUG( "iterate: {0} BEGIN", i );
             bool inserting = tests::rand( uni );
             if( inserting || !i )
             {
@@ -374,21 +371,23 @@ LOG_DEBUG( "iterate: {0} BEGIN", i );
             {
                 boost::asio::post( std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
             }
-LOG_DEBUG( "iterate: {0} END", i );
         }
 
-        //workers.join_all();
-
         io_context.stop();
+        workers.join_all();
+        
+        // not work without this
+        //using namespace std::chrono_literals;
+        //std::this_thread::sleep_for( 1s );
 
         // in this case success is not abort program ))
     }
-*/
+
     SECTION( "getting all cached files" )
     {
         /*
         * since we can't guarantee the order in which the files will be inserted in multithreaded mode, we execute several inserts in one thread and then get all the cached files
-        */ 
+        */
         const size_t min_filename_len = 10;
         const size_t max_filename_len = 15;
 
