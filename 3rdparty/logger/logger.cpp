@@ -41,7 +41,7 @@ void init_null_logger()
 
 void init_console_logger()
 {
-    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [%tid = %t]" );
+    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [tid = %t]" );
     g_logger = spdlog::stdout_color_mt( "yaps_logger" );
     g_logger->set_level( spdlog::level::trace );
     g_logger->flush_on( spdlog::level::trace );
@@ -50,7 +50,7 @@ void init_console_logger()
 
 void init_rotate_logger( const std::string & path, int max_file_size, int max_files )
 {
-    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [%tid = %t]" );
+    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [tid = %t]" );
     g_logger = spdlog::rotating_logger_mt( "yaps_logger", path, max_file_size, max_files );
     g_logger->set_level( spdlog::level::trace );
     g_logger->flush_on( spdlog::level::trace );
@@ -59,7 +59,7 @@ void init_rotate_logger( const std::string & path, int max_file_size, int max_fi
 
 void init_rotate_logger_with_title( const std::string & path, int max_file_size, int max_files )
 {
-    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [%tid = %t]" );
+    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [tid = %t]" );
 
     g_rot_sink_with_title = std::make_shared<spdlog::sinks::custom::rotating_file_sink_with_title_mt>( path, max_file_size, max_files );
     g_logger = std::make_shared<spdlog::logger>( "yaps_logger", g_rot_sink_with_title );
@@ -82,7 +82,7 @@ void set_rotate_logger( const std::string & title )
 
 void init_daily_logger( const std::string & path )
 {
-    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [%tid = %t]" );
+    spdlog::set_pattern( "[%D][%T.%e](%z) [%L] %v [tid = %t]" );
     g_logger = spdlog::daily_logger_mt( "yaps_logger", path, 0, 0 );
 
     g_logger->set_level( spdlog::level::trace );
