@@ -29,7 +29,7 @@ std::string random_string( size_t length )
             "abcdefghijklmnopqrstuvwxyz";
 
         
-        std::uniform_int_distribution<size_t>  uni(0, sizeof( charset ) /* 62 */);  /**< guaranteed unbiased */
+        std::uniform_int_distribution<size_t>  uni(0, sizeof( charset )-1 /* 62 */);  /**< guaranteed unbiased */
 
         return charset[rand(uni)];
     };
@@ -58,6 +58,7 @@ void get_file( const std::string & filename, const proxy_server_6::cache & cache
 {
     std::lock_guard lock( buffer.mtx );
     error::errc errc;
+
     buffer.files.emplace_back( cache.get_file( filename, errc ) );
 }
 

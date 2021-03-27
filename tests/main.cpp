@@ -337,6 +337,7 @@ TEST_CASE( "cache unit test", "[cahce]" )
     SECTION( "insert/get files in multithreading" )
     {
         boost::asio::io_context io_context;
+        // boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard{ boost::asio::make_work_guard( io_context ) };
 
         const size_t min_filename_len = 10;
         const size_t max_filename_len = 40;
@@ -354,25 +355,25 @@ TEST_CASE( "cache unit test", "[cahce]" )
         boost::thread_group workers;
         for( int64_t i = 0; i < workers_count; ++i )
         {
-            workers.create_thread( proxy_server_6::io_run_context_once( io_context ) );
+            workers.create_thread( proxy_server_6::run_io_context( io_context ) );
         }
-
-        io_context.run();
+        // io_context.run();
         std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */
         tests::files cached_files;
         for( size_t i = 0, n = files_count * 4; i < n; ++i )
         {
+            error::errc errc;
             bool inserting = tests::rand( uni );
-            if( inserting || !i )
+            if( inserting || i == 0 )
             {
-                boost::asio::post( std::bind(&tests::insert_file, std::cref( filenames[i % files_count] ), std::cref( files[i % files_count] ), std::ref( cache )) );
+                boost::asio::post( io_context, std::bind( &tests::insert_file, std::cref( filenames[i % files_count] ), std::cref( files[i % files_count] ), std::ref( cache ) ) );
             }
             else
             {
-                boost::asio::post( std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
+                boost::asio::post( io_context, std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
             }
         }
-
+        
         io_context.stop();
         workers.join_all();
         
