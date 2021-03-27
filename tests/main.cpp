@@ -307,7 +307,7 @@ TEST_CASE( "cache unit test", "[cahce]" )
 
     // and comment this
     // proxy_server_6::cache cache();
-/*
+
     SECTION( "insert/get file in single thread " )
     {
         const size_t min_filename_len = 10;
@@ -335,7 +335,7 @@ TEST_CASE( "cache unit test", "[cahce]" )
             REQUIRE( files[i % files_count] == cached_files.files[i] );
         }
     }
-*/ /*
+
     SECTION( "insert/get files in multithreading" )
     {
         boost::asio::io_context io_context;
@@ -358,32 +358,28 @@ TEST_CASE( "cache unit test", "[cahce]" )
         {
             workers.create_thread( proxy_server_6::run_io_context( io_context ) );
         }
-        workers.join_all();
 
-        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */ /*
+        std::uniform_int_distribution<size_t>  uni( 0, 1 );  /**< guaranteed unbiased */
         tests::files cached_files;
         for( size_t i = 0, n = files_count * 4; i < n; ++i )
         {
-LOG_DEBUG( "iterate: {0} BEGIN", i );
             bool inserting = tests::rand( uni );
             if( inserting || !i )
             {
-                boost::asio::post( std::bind(&tests::insert_file, std::cref( filenames[i % files_count] ), std::cref( files[i % files_count] ), std::ref( cache )) );
+                boost::asio::post( io_context, std::bind(&tests::insert_file, std::cref( filenames[i % files_count] ), std::cref( files[i % files_count] ), std::ref( cache )) );
             }
             else
             {
-                boost::asio::post( std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
+                boost::asio::post( io_context, std::bind( &tests::get_file, std::cref( filenames[(i - 1) % files_count] ), std::cref( cache ), std::ref( cached_files ) ) );
             }
-LOG_DEBUG( "iterate: {0} END", i );
         }
 
-        //workers.join_all();
-
         io_context.stop();
+        workers.join_all();
 
         // in this case success is not abort program ))
     }
-*/
+
     SECTION( "getting all cached files" )
     {
         /*
