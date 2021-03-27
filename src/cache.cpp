@@ -122,12 +122,10 @@ private:
         {
             oldest_command = m_command_by_time.front();
             index = oldest_command.filename_hash % m_data.size();
-LOG_DEBUG( "delete_oldest_file() index: {0}", index );
             m_command_by_time.pop();
         }
-LOG_DEBUG( "delete_oldest_file() getting mutex" );
+
         std::lock_guard data_locker{ m_data[index].get_mutex() };
-LOG_DEBUG( "delete_oldest_file() getting bucket" );
         auto & bucket = m_data[index];
         const auto & old_file = bucket.get_file( oldest_command.filename_hash );
 
