@@ -85,6 +85,7 @@ bool operator< ( const file_queue::node_t & lh, const file_queue::node_t & rh )
         ((lh.time == rh.time) && (lh.filename_hash < rh.filename_hash));
 }
 
+inline
 bool operator== ( const file_queue::node_t & lh, const file_queue::node_t & rh )
 {
     return (lh.filename_hash == rh.filename_hash);
