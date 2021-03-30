@@ -26,8 +26,8 @@ public:
     explicit cache_impl( size_t bucket_count = 5, std::size_t max_data_size = 1024, bool verbose = false )
         : m_cur_size( 0 )
         , m_max_size( max_data_size )
-        , m_data( bucket_count )
-        , m_command_by_time()
+        , m_data( bucket_count, verbose  )
+        , m_command_by_time( verbose )
         , m_verbose( verbose )
     {
         LOG_TRACE_IF( m_verbose, "cache::cache()" );
