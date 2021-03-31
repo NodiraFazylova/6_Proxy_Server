@@ -19,7 +19,7 @@ public:
     file_map() = default;
     ~file_map() = default;
 
-    file_map( bool verbose )
+    explicit file_map( bool verbose )
         : m_mtx()
         , m_files()
         , m_verbose( verbose )
@@ -69,6 +69,12 @@ public:
         {
             files.emplace_back( file );
         }
+    }
+
+    void set_log_mode( bool verbose )
+    {
+        LOG_TRACE_IF( verbose || m_verbose, "set m_verbose: {0}", verbose );
+        m_verbose = verbose;
     }
 
     // for the sake of simplicity, let's make a design error and label a function that is not "const" 
