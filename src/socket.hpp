@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/asio>
+#include <boost/asio.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 
@@ -110,7 +110,7 @@ private:
     /**
      * Internal hadler for async_resolve.
      */
-    void handle_resolve( socket::error_code::error_code error_code, boost::asio::ip::tcp::resolver::result_type results, std::function<void( socket::error_code error_code > ) bind_on_connect )
+    void handle_resolve( socket::error_code error_code, boost::asio::ip::tcp::resolver::results_type results, std::function<void( socket::error_code error_code )>  bind_on_connect )
     {
         if( error_code )
         {
@@ -142,7 +142,7 @@ private:
     {
         if( error_code )
         {
-            LOG_WARN_If( m_verbose, "socket::handle_connect() - error_code={0}", error_code.message() );
+            LOG_WARN_IF( m_verbose, "socket::handle_connect() - error_code={0}", error_code.message() );
 
             return post_handler( std::move( bind_on_connect ), error_code );
         }
@@ -291,9 +291,9 @@ private:
             LOG_TRACE_IF( m_verbose, "socket::handle_read() - success" );
         }
 
-        boost::ignore_unused( bytes_transferrred );
-        post_handler( std::std::move( bond_on_read ), error_code, boost::beast::buffers_to_string( m_receive_buffer.date() ) );
-        m_reveive_buffer.consume( m_receive_buffer.size() );
+        boost::ignore_unused( bytes_transferred );
+        post_handler( std::move( bind_on_read ), error_code, boost::beast::buffers_to_string( m_receive_buffer.data() ) );
+        m_receive_buffer.consume( m_receive_buffer.size() );
     }
 
 private:
@@ -301,7 +301,22 @@ private:
     /**
      * Post specified handler with provided params - single param version for async_connect, async_write.
      */
-    void post_handler( std::function<void( socket::error_code error_code, std::string buffer )> handler, web_socket::error_code error_code, std::string buffer )
+    void post_handler( std::function<void( socket::error_code error_code )> handler, socket::error_code error_code )
+    {
+        boost::asio::post(
+            m_io_context,
+            std::bind(
+                handler,
+                error_code
+            )
+        );
+    }
+
+
+    /**
+     * Post specified handler with provided params - two params version for async_read
+     */
+    void post_handler( std::function<void( socket::error_code error_code, std::string buffer )> handler, socket::error_code error_code, std::string buffer )
     {
         boost::asio::post(
             m_io_context,
@@ -318,13 +333,15 @@ private:
     using beast_websocket_t = boost::beast::websocket::stream< boost::asio::ip::tcp::socket >;
 
     boost::asio::io_context       & m_io_context;
-    boost::asio::ip_tcp::resolver   m_resolver;
+    boost::asio::ip::tcp::resolver  m_resolver;
     
     beast_websocket_t               m_socket;
 
-    std::stirng                     m_host;
-    std::string                     m_send_buufer;
+    std::string                     m_host;
+    std::string                     m_send_buffer;
     boost::beast::multi_buffer      m_receive_buffer;
+
+    bool                            m_verbose;
 };
 
 } // namespace proxy_server_6
